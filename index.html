@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#151929">
+<meta name="description" content="Send text messages between devices using only a speaker and a microphone.">
+<title>Airwave — messages over sound</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --field:#151929; --field2:#1d2238; --field3:#262d4e; --sunk:#0e1120;
+  --rule:#333a5e; --rule2:#454e7d; --ink:#dde2f3; --dim:#868fb4;
+  --t0:#63d4e0; --t1:#7fd88f; --t2:#f5a65b; --t3:#d98bd4;
+  --sync:#7c86bd; --alert:#e4657a; --ok:#7fd88f;
+  --display:"Space Grotesk",system-ui,-apple-system,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --pad:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:radial-gradient(900px 420px at 12% -8%,#232a4e 0%,transparent 62%),var(--field);
+  color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:1140px;margin:0 auto;padding:20px var(--pad) 56px}
+@media(min-width:700px){:root{--pad:24px}}
+
+header{margin-bottom:20px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--dim);display:flex;gap:6px 14px;flex-wrap:wrap;margin-bottom:10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,8vw,50px);
+  letter-spacing:-.025em;line-height:1.02;margin:0 0 8px}
+h1 em{font-style:normal;color:var(--t2)}
+.sub{color:var(--dim);max-width:60ch;margin:0;font-size:14.5px}
+
+.ribbon{margin-top:18px;border:1px solid var(--rule);border-radius:4px;background:var(--sunk);
+  position:relative;overflow:hidden}
+.ribbon canvas{display:block;width:100%;height:58px}
+.ribbon .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);text-align:center;padding:0 12px}
+.ribbon .scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;
+  color:var(--dim);padding:0 6px 4px;letter-spacing:.08em}
+
+.grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:20px}
+@media(min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1.08fr)}}
+.panel{background:linear-gradient(180deg,var(--field2),#191e33);border:1px solid var(--rule);
+  border-radius:5px;padding:18px}
+.ph{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 14px;font-weight:500;display:flex;justify-content:space-between;
+  align-items:center;gap:10px}
+
+label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+label b{color:var(--ink);font-weight:500}
+textarea,select{width:100%;background:var(--sunk);color:var(--ink);border:1px solid var(--rule);
+  border-radius:4px;padding:11px 12px;font-family:var(--mono);font-size:15px;min-height:44px}
+textarea{resize:vertical;min-height:82px;line-height:1.45}
+select{appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:34px}
+.field{margin-bottom:13px}
+.row{display:flex;gap:11px;flex-wrap:wrap}
+.row>*{flex:1 1 145px;min-width:0}
+input[type=range]{width:100%;accent-color:var(--t2);height:30px;margin:0}
+button{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--field3);color:var(--ink);border:1px solid var(--rule2);border-radius:4px;
+  padding:0 16px;min-height:44px;cursor:pointer;transition:background .15s,border-color .15s}
+button:hover:not(:disabled){background:#2f3766;border-color:#5a64a0}
+button:disabled{opacity:.38;cursor:not-allowed}
+button.primary{background:var(--t2);border-color:var(--t2);color:#1b1204;font-weight:600}
+button.primary:hover:not(:disabled){background:#ffb975;border-color:#ffb975}
+button.live{background:var(--alert);border-color:var(--alert);color:#fff}
+button.wide{width:100%}
+:focus-visible{outline:2px solid var(--t0);outline-offset:2px}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.btnrow>button{flex:1 1 auto}
+.hint{font-size:12.5px;color:var(--dim);margin:11px 0 0;line-height:1.55}
+.pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  padding:4px 9px;border-radius:3px;border:1px solid var(--rule);color:var(--dim);white-space:nowrap}
+.pill.on{border-color:var(--ok);color:var(--ok)}
+.pill.busy{border-color:var(--t2);color:var(--t2)}
+.pill.err{border-color:var(--alert);color:var(--alert)}
+.prog{height:3px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:12px;display:none}
+.prog.show{display:block}
+.prog i{display:block;height:100%;width:0;background:var(--t2);transition:width .12s linear}
+
+.bins{background:var(--sunk);border:1px solid var(--rule);border-radius:4px;padding:14px;margin-bottom:14px}
+.bin{display:grid;grid-template-columns:34px 1fr 44px;gap:9px;align-items:center;margin-bottom:7px}
+.bin:last-of-type{margin-bottom:0}
+.bin .nm{font-family:var(--mono);font-size:10px;letter-spacing:.05em}
+.bin .vl{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.track{height:10px;background:#1a1f38;border-radius:2px;overflow:hidden}
+.fill{display:block;height:100%;width:0;border-radius:2px;transition:width .07s linear}
+.b0 .nm{color:var(--t0)} .b0 .fill{background:var(--t0)}
+.b1 .nm{color:var(--t1)} .b1 .fill{background:var(--t1)}
+.b2 .nm{color:var(--t2)} .b2 .fill{background:var(--t2)}
+.b3 .nm{color:var(--t3)} .b3 .fill{background:var(--t3)}
+.bsy .nm{color:var(--sync)} .bsy .fill{background:var(--sync)}
+.ticker{display:flex;gap:2px;height:24px;align-items:flex-end;margin-top:13px;overflow:hidden}
+.sym{width:6px;flex:none;border-radius:1px}
+.caption{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--dim);margin-top:9px;line-height:1.5}
+
+.log{max-height:250px;overflow-y:auto;font-family:var(--mono)}
+.msg{border-left:2px solid var(--t0);padding:9px 0 9px 11px;margin-bottom:8px;background:var(--sunk);
+  border-radius:0 3px 3px 0}
+.msg.bad{border-left-color:var(--alert)}
+.msg.dup{border-left-color:var(--rule2);opacity:.55}
+.msg .meta{font-size:9.5px;color:var(--dim);letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
+.msg .txt{font-size:14px;word-break:break-word;white-space:pre-wrap}
+.empty{color:var(--dim);font-family:var(--mono);font-size:12px;padding:12px 0}
+
+.probe{margin-top:16px}
+.pcanvas{position:relative;background:var(--sunk);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.pcanvas canvas{display:block;width:100%;height:190px}
+@media(min-width:700px){.pcanvas canvas{height:220px}}
+.pcanvas .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  text-align:center;padding:0 18px;line-height:1.8}
+.verdicts{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+@media(min-width:620px){.verdicts{grid-template-columns:repeat(3,1fr)}}
+.vd{border:1px solid var(--rule);border-radius:4px;padding:10px 12px;background:var(--sunk)}
+.vd .vn{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;margin-bottom:3px}
+.vd .vs{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums}
+.vd .vt{font-size:11.5px;color:var(--dim);margin-top:1px}
+.vd.best{border-color:var(--ok)} .vd.best .vs{color:var(--ok)}
+.vd.weak .vs{color:var(--alert)}
+
+details{margin-top:16px;border:1px solid var(--rule);border-radius:5px;background:var(--field2)}
+summary{padding:15px 18px;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--dim);list-style:none;display:flex;justify-content:space-between;
+  align-items:center;min-height:44px;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:16px;color:var(--rule2)}
+details[open] summary::after{content:"\2212"}
+details[open] summary{border-bottom:1px solid var(--rule);color:var(--ink)}
+.dbody{padding:18px}
+.freqread{font-family:var(--mono);font-size:clamp(26px,7vw,40px);font-weight:600;
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.freqread small{font-size:13px;color:var(--dim);font-weight:400;letter-spacing:.1em}
+.spec table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+.spec td{padding:7px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.spec tr:last-child td{border-bottom:none}
+.spec td:first-child{color:var(--dim);width:36%;padding-right:12px}
+footer{margin-top:26px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.8}
+footer code{color:var(--ink)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">
+    <span>physical layer</span><span>4-FSK</span><span>Hamming 7,4</span>
+    <span>interleaved</span><span>CRC-16</span><span id="srlab">48.0 kHz</span>
+  </div>
+  <h1>Messages that travel as <em>sound</em>.</h1>
+  <p class="sub">Four tones carry two bits each. Error-correcting codes repair what the room damages. No radio, no network, no pairing — one device plays, the other listens.</p>
+
+  <div class="ribbon">
+    <canvas id="ribbon" aria-label="Live microphone spectrum"></canvas>
+    <div class="off" id="ribbonoff">Start listening to see what the microphone hears</div>
+    <div class="scale"><span>0</span><span>6k</span><span>12k</span><span>18k</span><span id="nyq">24k</span></div>
+  </div>
+</header>
+
+<div class="grid">
+  <section class="panel">
+    <h2 class="ph">Send <span class="pill" id="txpill">idle</span></h2>
+    <div class="field">
+      <label for="msg">Message <b id="bytecount">0 / 200 bytes</b></label>
+      <textarea id="msg" maxlength="200" placeholder="Type something…">hello from across the room</textarea>
+    </div>
+    <div class="row field">
+      <div>
+        <label for="band">Tone band</label>
+        <select id="band">
+          <option value="low">Low · 2.6–6.5 kHz · audible</option>
+          <option value="mid" selected>Mid · 9.6–13.5 kHz · faint</option>
+          <option value="high">High · 15.2–19.1 kHz · near-silent</option>
+        </select>
+      </div>
+      <div>
+        <label for="rate">Symbol length</label>
+        <select id="rate">
+          <option value="0">40 ms · survives echo</option>
+          <option value="1" selected>20 ms · balanced</option>
+          <option value="2">10 ms · needs a quiet, dry room</option>
+        </select>
+      </div>
+    </div>
+    <div class="row field">
+      <div>
+        <label for="reps">Repeats</label>
+        <select id="reps">
+          <option value="1" selected>Send once</option>
+          <option value="2">Send twice</option>
+          <option value="3">Send three times</option>
+        </select>
+      </div>
+      <div>
+        <label for="vol">Level <b id="vollab">75%</b></label>
+        <input type="range" id="vol" min="10" max="100" value="75">
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="primary" id="send">Send</button>
+      <button id="loop">Self-test</button>
+    </div>
+    <div class="prog" id="txprog"><i></i></div>
+    <p class="hint" id="txhint">Self-test runs the encoder into the decoder with no sound at all, so you can confirm the codec works before blaming the room.</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="ph">Receive <span class="pill" id="rxpill">microphone off</span></h2>
+    <div class="bins">
+      <div class="bin bsy"><span class="nm">sync</span><span class="track"><i class="fill" id="fsy"></i></span><span class="vl" id="vsy">—</span></div>
+      <div class="bin b0"><span class="nm">00</span><span class="track"><i class="fill" id="f0"></i></span><span class="vl" id="v0">—</span></div>
+      <div class="bin b1"><span class="nm">01</span><span class="track"><i class="fill" id="f1"></i></span><span class="vl" id="v1">—</span></div>
+      <div class="bin b2"><span class="nm">11</span><span class="track"><i class="fill" id="f2"></i></span><span class="vl" id="v2">—</span></div>
+      <div class="bin b3"><span class="nm">10</span><span class="track"><i class="fill" id="f3"></i></span><span class="vl" id="v3">—</span></div>
+      <div class="ticker" id="ticker"></div>
+      <div class="caption" id="rxcap">idle — watching all nine sync tones at once</div>
+    </div>
+    <div class="btnrow" style="margin-bottom:14px">
+      <button id="listen" class="wide">Start listening</button>
+    </div>
+    <div class="prog" id="rxprog"><i></i></div>
+    <div class="log" id="log"><div class="empty">Nothing received yet.</div></div>
+  </section>
+</div>
+
+<section class="panel probe">
+  <h2 class="ph">Channel check <span class="pill" id="ppill">not measured</span></h2>
+  <div class="pcanvas">
+    <canvas id="pc" aria-label="Measured frequency response"></canvas>
+    <div class="ov" id="pov">Find out how much of each band survives<br>the trip from a speaker to this microphone</div>
+  </div>
+  <div class="verdicts" id="verdicts" hidden>
+    <div class="vd" id="vd-low"><div class="vn">Low band</div><div class="vs">—</div><div class="vt"></div></div>
+    <div class="vd" id="vd-mid"><div class="vn">Mid band</div><div class="vs">—</div><div class="vt"></div></div>
+    <div class="vd" id="vd-high"><div class="vn">High band</div><div class="vs">—</div><div class="vt"></div></div>
+  </div>
+  <div class="btnrow" style="margin-top:13px">
+    <button id="selftest">Check this device</button>
+    <button id="measure">Listen only</button>
+    <button id="sweep">Play sweep only</button>
+  </div>
+  <p class="hint" id="phint">“Check this device” sweeps this speaker and measures it on this microphone. For a real two-device link, press “Listen only” on the receiver and “Play sweep only” on the sender — the weaker of the two measurements is what limits you.</p>
+</section>
+
+<details>
+  <summary>Plain tone generator</summary>
+  <div class="dbody">
+    <div class="row" style="align-items:flex-end">
+      <div style="flex:2 1 240px">
+        <div class="freqread"><span id="fread">1.00k</span> <small>Hz</small></div>
+        <input type="range" id="fslide" min="0" max="1000" value="530" aria-label="Frequency">
+        <label style="margin-top:2px">20 Hz — 20 kHz, logarithmic</label>
+      </div>
+      <div style="flex:1 1 130px">
+        <label for="wave">Waveform</label>
+        <select id="wave"><option value="sine">Sine</option><option value="square">Square</option>
+          <option value="triangle">Triangle</option><option value="sawtooth">Sawtooth</option></select>
+      </div>
+      <div style="flex:0 1 130px"><button id="tone" class="wide">Play</button></div>
+    </div>
+    <p class="hint">Slide it upward while watching the ribbon at the top to find exactly where your speaker or microphone gives up.</p>
+  </div>
+</details>
+
+<details class="spec">
+  <summary>How a frame is built</summary>
+  <div class="dbody">
+    <table>
+      <tr><td>Carrier</td><td>Eight symbols alternating between the outer two tones, so the receiver's automatic gain control settles before anything meaningful arrives.</td></tr>
+      <tr><td>Sync</td><td>Four symbols of a tone unique to each band-and-rate combination. Nine such tones exist, so hearing one identifies both the band and the symbol length — the receiver is never told either.</td></tr>
+      <tr><td>Header</td><td>Payload length plus an 8-bit check, as four Hamming(7,4) codewords, sent three times over. Majority vote across the copies, then error correction on the result.</td></tr>
+      <tr><td>Body</td><td>Payload and CRC-16 split into nibbles, one Hamming(7,4) codeword per nibble, then block-interleaved so a burst of noise damages many codewords slightly rather than one codeword fatally.</td></tr>
+      <tr><td>Symbols</td><td>Two bits per symbol, Gray-coded across the four tones, so mistaking a tone for its neighbour costs one bit instead of two — exactly the error Hamming repairs.</td></tr>
+      <tr><td>Clock</td><td>Rather than trusting a measured edge, the receiver tries a spread of clock offsets across the whole sync burst, ranks them by how confidently the tones separate, and keeps the first whose header check passes. Multipath can shift an apparent edge by whole symbols; it cannot forge a valid header.</td></tr>
+    </table>
+  </div>
+</details>
+
+<footer>
+  Microphone access needs a secure origin — GitHub Pages, or <code>http://localhost</code>. A plain LAN address is refused by the browser. Sending needs no permission, so a device on an insecure origin can still transmit.
+  <br>Half-duplex: listening pauses while sending. Band and symbol length are detected automatically.
+  <br>If a link refuses to work at one setting, change the symbol length — a room reflection can put a null right on one sync tone, and moving to another dodges it.
+  <button id="share" style="margin-top:12px">Copy link with these settings</button>
+</footer>
+</div>
+
+<script>
+"use strict";
+/* ==================================================================
+   Airwave — acoustic 4-FSK modem.
+   Every parameter below was chosen against a simulated channel with
+   additive noise, sample-clock mismatch and room echo.
+================================================================== */
+
+/* --- bands: four data tones, plus one sync tone per symbol rate --- */
+const BANDS = {
+  low:  { name:"Low",  syncs:[2600,3200,3800],     tones:[5000,5500,6000,6500] },
+  mid:  { name:"Mid",  syncs:[9600,10200,10800],   tones:[12000,12500,13000,13500] },
+  high: { name:"High", syncs:[15200,15800,16400],  tones:[17600,18100,18600,19100] }
+};
+const BAND_KEYS = ["low","mid","high"];
+const RATES = [0.04, 0.02, 0.01];
+const CARRIER_SYMS = 8, SYNC_SYMS = 4, HREP = 3, HNIB = 4;
+const HBITS = HREP * HNIB * 7;                 // 84
+const HDR_SYMS = HBITS/2;                      // 42
+const TONE_FOR_VAL = [0,1,3,2], VAL_FOR_TONE = [0,1,3,2];
+
+const SYNC_LIST = [];
+for(const k of BAND_KEYS) for(let r=0;r<3;r++) SYNC_LIST.push({key:k, rate:r, f:BANDS[k].syncs[r]});
+
+const $ = id => document.getElementById(id);
+
+/* ---------------- audio context ---------------- */
+let ctx = null, sr = 48000;
+function audio(){
+  if(!ctx){
+    ctx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:48000});
+    sr = ctx.sampleRate;
+    $("srlab").textContent = (sr/1000).toFixed(1)+" kHz";
+    $("nyq").textContent = Math.round(sr/2000)+"k";
+  }
+  if(ctx.state === "suspended") ctx.resume();
+  return ctx;
+}
+const conf = () => {
+  const ri = parseInt($("rate").value,10);
+  return { band:BANDS[$("band").value], rateIdx:ri, N:Math.round(sr*RATES[ri]),
+           reps:parseInt($("reps").value,10) };
+};
+
+/* ---------------- Hamming(7,4) ---------------- */
+const HAM_ENC = new Array(16), HAM_DEC = new Int8Array(128);
+for(let v=0;v<16;v++){
+  const d1=(v>>3)&1, d2=(v>>2)&1, d3=(v>>1)&1, d4=v&1;
+  HAM_ENC[v] = [d1^d2^d4, d1^d3^d4, d1, d2^d3^d4, d2, d3, d4];
+}
+for(let w=0;w<128;w++){
+  const c=[0,(w>>6)&1,(w>>5)&1,(w>>4)&1,(w>>3)&1,(w>>2)&1,(w>>1)&1,w&1];
+  const s1=c[1]^c[3]^c[5]^c[7], s2=c[2]^c[3]^c[6]^c[7], s4=c[4]^c[5]^c[6]^c[7];
+  const syn=s1+2*s2+4*s4;
+  if(syn>=1&&syn<=7) c[syn]^=1;
+  HAM_DEC[w]=(c[3]<<3)|(c[5]<<2)|(c[6]<<1)|c[7];
+}
+const wordToInt = b => (b[0]<<6)|(b[1]<<5)|(b[2]<<4)|(b[3]<<3)|(b[4]<<2)|(b[5]<<1)|b[6];
+
+/* ---------------- checksums ---------------- */
+function crc16(bytes){
+  let c=0xFFFF;
+  for(const b of bytes){ c^=b<<8;
+    for(let i=0;i<8;i++) c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF; }
+  return c;
+}
+function hdrCheck(len){
+  let c=0xFF;
+  for(const b of [len,0x5A]){ c^=b;
+    for(let i=0;i<8;i++) c=(c&0x80)?((c<<1)^0x07)&0xff:(c<<1)&0xff; }
+  return c;
+}
+
+/* ---------------- interleaver ---------------- */
+function interleave(words){
+  const out=[];
+  for(let c=0;c<7;c++) for(let r=0;r<words.length;r++) out.push(words[r][c]);
+  return out;
+}
+function deinterleave(bits, rows){
+  const w=Array.from({length:rows},()=>new Array(7).fill(0));
+  let i=0;
+  for(let c=0;c<7;c++) for(let r=0;r<rows;r++) w[r][c]=bits[i++];
+  return w;
+}
+
+/* ---------------- encoder ---------------- */
+function encodeFrame(text){
+  const payload = Array.from(new TextEncoder().encode(text));
+  if(!payload.length) throw new Error("Nothing to send");
+  if(payload.length > 200) throw new Error("Over 200 bytes — shorten it");
+
+  const crc = crc16(payload);
+  const body = [...payload, (crc>>8)&255, crc&255];
+  const nib = [];
+  for(const b of body) nib.push(b>>4, b&15);
+  const bodyBits = interleave(nib.map(n=>HAM_ENC[n&15]));
+
+  const ck = hdrCheck(payload.length);
+  const hdr = interleave([HAM_ENC[payload.length>>4], HAM_ENC[payload.length&15],
+                          HAM_ENC[ck>>4], HAM_ENC[ck&15]]);
+  const headerBits = [];
+  for(let r=0;r<HREP;r++) headerBits.push(...hdr);
+
+  const bits = [...headerBits, ...bodyBits];
+  if(bits.length % 2) bits.push(0);
+  const symbols = [];
+  for(let i=0;i<bits.length;i+=2) symbols.push(TONE_FOR_VAL[(bits[i]<<1)|bits[i+1]]);
+  return { symbols, payloadLen:payload.length };
+}
+
+/* ---------------- modulator ---------------- */
+function modulate(symbols, band, rateIdx, N){
+  const total = (CARRIER_SYMS + SYNC_SYMS + symbols.length) * N;
+  const out = new Float32Array(total);
+  const step = 2*Math.PI/sr;
+  let ph=0, k=0;
+  const emit = f => { for(let i=0;i<N;i++){ out[k++]=Math.sin(ph); ph+=step*f; } ph%=2*Math.PI; };
+  for(let i=0;i<CARRIER_SYMS;i++) emit(band.tones[i%2?3:0]);
+  for(let i=0;i<SYNC_SYMS;i++) emit(band.syncs[rateIdx]);
+  for(const s of symbols) emit(band.tones[s]);
+  const fade = Math.min(Math.round(sr*0.004), Math.floor(total/2));
+  for(let i=0;i<fade;i++){
+    const w = 0.5-0.5*Math.cos(Math.PI*i/fade);
+    out[i]*=w; out[total-1-i]*=w;
+  }
+  return out;
+}
+
+/* ---------------- ring buffer + Goertzel ---------------- */
+const RING_SEC = 20;
+let ring = new Float32Array(48000*RING_SEC), written = 0;
+function goertzel(start, N, freq){
+  const w = 2*Math.PI*freq/sr, c = 2*Math.cos(w);
+  let s1=0, s2=0;
+  const L = ring.length;
+  let idx = ((start % L) + L) % L;
+  for(let i=0;i<N;i++){
+    const s = ring[idx] + c*s1 - s2;
+    s2=s1; s1=s;
+    if(++idx===L) idx=0;
+  }
+  return (s1*s1 + s2*s2 - c*s1*s2)/(N*N);
+}
+const dB = p => 10*Math.log10(p + 1e-13);
+
+/* ==================================================================
+   RECEIVER
+================================================================== */
+let SCAN_W = 480, SCAN_H = 192;
+let rx = null;
+function resetRx(from){
+  rx = { state:"scan", pos:from, hits:0, cand:-1, firstHit:0, lastHit:0, warm:0,
+         floor:new Float32Array(SYNC_LIST.length).fill(1e-10),
+         band:null, N:0, rateIdx:0, symStart:0, symIdx:0, totalSyms:0,
+         bits:[], rows:0, len:0, fixed:0, snrSum:0, snrN:0 };
+}
+function initRing(){
+  if(ring.length !== sr*RING_SEC) ring = new Float32Array(sr*RING_SEC);
+  ring.fill(0); written = 0;
+  SCAN_W = Math.round(sr*0.010); SCAN_H = Math.round(sr*0.004);
+  resetRx(0);
+  setCap("idle — watching all nine sync tones at once");
+  $("rxprog").classList.remove("show");
+}
+
+/* Demodulate `count` symbols from a fractional start position. Returns a
+   confidence score: the mean gap in dB between the winning tone and the
+   runner-up, which peaks sharply at the correct clock offset. */
+function demod(startPos, count, band, N){
+  let sp = startPos;
+  const bits = [], tones = [];
+  let sum = 0;
+  for(let c=0;c<count;c++){
+    const st = Math.round(sp);
+    if(st < 0 || written < st + N + 4) return null;
+    const p = [0,0,0,0];
+    for(let i=0;i<4;i++) p[i] = goertzel(st, N, band.tones[i]);
+    let win=0, second=0;
+    for(let i=1;i<4;i++) if(p[i]>p[win]) win=i;
+    for(let i=0;i<4;i++) if(i!==win && p[i]>second) second=p[i];
+    sum += dB(p[win]) - dB(second);
+    sp += N;
+    const v = VAL_FOR_TONE[win];
+    bits.push((v>>1)&1, v&1);
+    tones.push(win);
+    if(c === count-1) lastPowers = p;
+  }
+  return { bits, tones, symStart:sp, snrSum:sum, snrN:count, count, score:sum/count };
+}
+let lastPowers = [0,0,0,0];
+
+function readHeader(bits){
+  const W = HNIB*7;
+  if(bits.length < HBITS) return null;
+  const votes = new Array(W).fill(0);
+  for(let r=0;r<HREP;r++) for(let i=0;i<W;i++) votes[i] += bits[r*W+i];
+  const maj = votes.map(x => x*2 > HREP ? 1 : 0);
+  const hw = deinterleave(maj, HNIB);
+  const len = (HAM_DEC[wordToInt(hw[0])]<<4) | HAM_DEC[wordToInt(hw[1])];
+  const chk = (HAM_DEC[wordToInt(hw[2])]<<4) | HAM_DEC[wordToInt(hw[3])];
+  if(len < 1 || len > 200 || chk !== hdrCheck(len)) return null;
+  return { len };
+}
+
+let rxMuted = false;
+function feed(chunk){
+  const L = ring.length;
+  for(let i=0;i<chunk.length;i++) ring[(written+i) % L] = chunk[i];
+  written += chunk.length;
+  pump();
+}
+
+function pump(){
+  if(!rx) return;
+  let guard = 0;
+  while(guard++ < 4000){
+
+    /* ---- scan all nine sync tones ---- */
+    if(rx.state === "scan"){
+      if(written - rx.pos < SCAN_W) return;
+      const p = new Float64Array(SYNC_LIST.length);
+      let best=0, sum=0;
+      for(let i=0;i<SYNC_LIST.length;i++){
+        p[i] = goertzel(rx.pos, SCAN_W, SYNC_LIST[i].f);
+        sum += p[i];
+        if(p[i] > p[best]) best = i;
+      }
+      const band = BANDS[SYNC_LIST[best].key];
+      const tn=[0,0,0,0];
+      let dsum=0;
+      for(let i=0;i<4;i++){ tn[i]=goertzel(rx.pos, SCAN_W, band.tones[i]); dsum+=tn[i]; }
+      meters(p[best], tn);
+      const ratio = p[best]/(sum + dsum + 1e-13);
+      rx.warm++;
+      const hot = p[best] > rx.floor[best]*30 && p[best] > 3e-7;
+      if(rx.warm > 15 && ratio > 0.28 && hot){
+        if(rx.hits===0 || rx.cand!==best){ rx.cand=best; rx.firstHit=rx.pos; rx.hits=0; }
+        rx.hits++; rx.lastHit = rx.pos;
+        if(rx.hits >= 3){ rx.state = "acquire"; continue; }
+      } else {
+        if(rx.hits>0 && rx.pos - rx.lastHit > SCAN_W*3){ rx.hits=0; rx.cand=-1; }
+        for(let i=0;i<p.length;i++) rx.floor[i] = rx.floor[i]*0.95 + p[i]*0.05;
+      }
+      rx.pos += SCAN_H;
+      continue;
+    }
+
+    /* ---- find the symbol clock by ranked search, verified by the header ---- */
+    if(rx.state === "acquire"){
+      const sl = SYNC_LIST[rx.cand], band = BANDS[sl.key], N = Math.round(sr*RATES[sl.rate]);
+      const lo = rx.firstHit - 0.5*N, hi = rx.firstHit + (SYNC_SYMS+0.5)*N;
+      if(written < hi + (HDR_SYMS+2)*N) return;
+
+      setPill($("rxpill"),"busy","locking on");
+      const coarse = [];
+      for(let t=lo; t<=hi; t+=0.25*N){
+        const r = demod(t, 14, band, N);
+        if(r) coarse.push([t, r.score]);
+      }
+      if(!coarse.length){ resetRx(Math.round(hi)+N); return; }
+      coarse.sort((a,b)=>b[1]-a[1]);
+
+      let chosen = null;
+      for(const [t0] of coarse.slice(0,4)){
+        const cands = [];
+        for(let t=t0-0.3*N; t<=t0+0.3*N; t+=0.05*N){
+          const r = demod(t, HDR_SYMS, band, N);
+          if(r) cands.push([t,r]);
+        }
+        cands.sort((a,b)=>b[1].score-a[1].score);
+        for(const [,r] of cands.slice(0,6)){
+          const h = readHeader(r.bits);
+          if(h){ chosen = {...r, len:h.len}; break; }
+        }
+        if(chosen) break;
+      }
+      if(!chosen){
+        deliver(null, "could not lock onto the symbol clock — try 40 ms symbols");
+        resetRx(Math.round(hi)+N);
+        return;
+      }
+
+      rx.band=band; rx.N=N; rx.rateIdx=sl.rate;
+      rx.symStart=chosen.symStart; rx.symIdx=chosen.count; rx.bits=chosen.bits;
+      rx.snrSum=chosen.snrSum; rx.snrN=chosen.snrN; rx.fixed=0;
+      rx.len=chosen.len; rx.rows=(chosen.len+2)*2;
+      rx.totalSyms = Math.ceil((HBITS + rx.rows*7)/2);
+      rx.state = "data";
+      $("ticker").innerHTML = "";
+      for(const t of chosen.tones.slice(-24)) pushSym(t, true);
+      setPill($("rxpill"),"busy","receiving");
+      setCap(`${band.name.toLowerCase()} band · ${Math.round(N/sr*1000)} ms symbols · ${chosen.len} bytes incoming`);
+      $("rxprog").classList.add("show");
+      continue;
+    }
+
+    /* ---- stream the body ---- */
+    if(rx.state === "data"){
+      const r = demod(rx.symStart, 1, rx.band, rx.N);
+      if(!r) return;
+      rx.symStart = r.symStart;
+      rx.bits.push(...r.bits);
+      rx.snrSum += r.snrSum; rx.snrN += r.snrN; rx.symIdx++;
+      meters(0, lastPowers);
+      pushSym(r.tones[0], r.score > 6);
+      $("rxprog").firstElementChild.style.width =
+        Math.min(100, rx.symIdx/rx.totalSyms*100)+"%";
+
+      if(rx.bits.length >= HBITS + rx.rows*7){
+        const words = deinterleave(rx.bits.slice(HBITS, HBITS+rx.rows*7), rx.rows);
+        const nib = words.map(w => {
+          const raw = wordToInt(w), f = HAM_DEC[raw];
+          if(wordToInt(HAM_ENC[f]) !== raw) rx.fixed++;
+          return f;
+        });
+        const bytes = [];
+        for(let i=0;i<nib.length;i+=2) bytes.push((nib[i]<<4)|nib[i+1]);
+        const payload = bytes.slice(0, rx.len);
+        const got = (bytes[rx.len]<<8) | bytes[rx.len+1];
+        const info = { band:rx.band.name, ms:Math.round(rx.N/sr*1000),
+                       snr:rx.snrSum/rx.snrN, fixed:rx.fixed };
+        if(crc16(payload) === got){
+          deliver(new TextDecoder().decode(new Uint8Array(payload)), null, info);
+        } else {
+          deliver(null, `checksum failed after repairing ${rx.fixed} codeword${rx.fixed===1?"":"s"} — signal too weak`, info);
+        }
+        const at = Math.round(rx.symStart);
+        resetRx(at);
+        $("rxprog").classList.remove("show");
+        continue;
+      }
+      continue;
+    }
+    return;
+  }
+}
+
+/* ---------------- meters + ticker ---------------- */
+const barPct = p => Math.max(0, Math.min(100, (dB(p)+92)*1.3));
+function meters(sy, t){
+  $("fsy").style.width = barPct(sy)+"%"; $("vsy").textContent = dB(sy).toFixed(0);
+  for(let i=0;i<4;i++){
+    $("f"+i).style.width = barPct(t[i])+"%";
+    $("v"+i).textContent = dB(t[i]).toFixed(0);
+  }
+}
+const TONE_VARS = ["--t0","--t1","--t2","--t3"];
+function pushSym(idx, strong){
+  const d = document.createElement("div");
+  d.className = "sym";
+  d.style.height = (7 + idx*5)+"px";
+  d.style.background = `var(${TONE_VARS[idx]})`;
+  d.style.opacity = strong ? "1" : "0.45";
+  const t = $("ticker");
+  t.appendChild(d);
+  while(t.children.length > 48) t.removeChild(t.firstChild);
+}
+const setCap = s => { $("rxcap").textContent = s; };
+function setPill(el, kind, text){
+  el.className = "pill" + (kind ? " "+kind : "");
+  el.textContent = text;
+}
+
+/* ---------------- delivery ---------------- */
+const logEl = $("log");
+let lastText=null, lastTime=0;
+function deliver(text, err, info){
+  const e = logEl.querySelector(".empty"); if(e) e.remove();
+  const now = Date.now();
+  const dup = text !== null && text === lastText && now - lastTime < 15000;
+  if(text !== null){ lastText = text; lastTime = now; }
+
+  const parts = [new Date().toLocaleTimeString()];
+  if(info){
+    parts.push(info.band.toLowerCase()+" band", info.ms+" ms",
+               info.snr.toFixed(0)+" dB margin");
+    if(info.fixed) parts.push(info.fixed+" repaired");
+  }
+  parts.push(err ? "failed" : dup ? "repeat" : "ok");
+
+  const d = document.createElement("div");
+  d.className = "msg" + (err ? " bad" : dup ? " dup" : "");
+  d.innerHTML = '<div class="meta"></div><div class="txt"></div>';
+  d.querySelector(".meta").textContent = parts.join(" · ");
+  d.querySelector(".txt").textContent = err || text;
+  logEl.prepend(d);
+  while(logEl.children.length > 40) logEl.removeChild(logEl.lastChild);
+
+  setPill($("rxpill"), err?"err":"on", err?"frame lost":dup?"repeat":"decoded");
+  setCap("idle — watching all nine sync tones at once");
+  setTimeout(()=>{ if(listening) setPill($("rxpill"),"on","listening"); }, 1800);
+}
+
+/* ==================================================================
+   MICROPHONE
+================================================================== */
+const WORKLET = `
+class Tap extends AudioWorkletProcessor{
+  process(inputs){ const c=inputs[0]&&inputs[0][0]; if(c) this.port.postMessage(c.slice(0)); return true; }
+}
+registerProcessor('tap', Tap);`;
+
+let micStream=null, micNode=null, analyser=null, listening=false;
+
+async function startListening(){
+  const c = audio();
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1 }
+    });
+  }catch(err){
+    setPill($("rxpill"),"err","mic blocked");
+    deliver(null, "Microphone unavailable — "+(err&&err.message?err.message:err)+
+      ". Serve this page over https:// or http://localhost.");
+    return false;
+  }
+  try{
+    const url = URL.createObjectURL(new Blob([WORKLET],{type:"application/javascript"}));
+    await c.audioWorklet.addModule(url);
+    URL.revokeObjectURL(url);
+  }catch(err){
+    deliver(null,"This browser cannot run AudioWorklet — use current Chrome, Edge, Firefox or Safari.");
+    return false;
+  }
+  const src = c.createMediaStreamSource(micStream);
+  micNode = new AudioWorkletNode(c,"tap");
+  micNode.port.onmessage = ev => {
+    if(!rxMuted) feed(ev.data);
+    if(probe.active) probeTick();
+  };
+  analyser = c.createAnalyser();
+  analyser.fftSize = 4096;
+  analyser.minDecibels = -115;
+  analyser.maxDecibels = -8;
+  analyser.smoothingTimeConstant = 0.4;
+  src.connect(micNode);
+  src.connect(analyser);
+  const sink = c.createGain(); sink.gain.value = 0;
+  micNode.connect(sink).connect(c.destination);
+
+  initRing();
+  listening = true;
+  $("listen").textContent = "Stop listening";
+  $("listen").classList.add("live");
+  setPill($("rxpill"),"on","listening");
+  $("ribbonoff").style.display = "none";
+  drawRibbon();
+  return true;
+}
+function stopListening(){
+  listening = false;
+  if(micStream) micStream.getTracks().forEach(t=>t.stop());
+  if(micNode){ micNode.port.onmessage=null; try{micNode.disconnect();}catch(e){} }
+  micStream=micNode=analyser=null;
+  probe.active=false;
+  $("listen").textContent = "Start listening";
+  $("listen").classList.remove("live");
+  setPill($("rxpill"),"","microphone off");
+  $("ribbonoff").style.display = "flex";
+  meters(0,[0,0,0,0]);
+}
+$("listen").onclick = () => listening ? stopListening() : startListening();
+
+/* ==================================================================
+   TRANSMIT
+================================================================== */
+function playSamples(samples, level){
+  const c = audio();
+  const buf = c.createBuffer(1, samples.length, sr);
+  buf.copyToChannel(samples, 0);
+  const g = c.createGain(); g.gain.value = level;
+  const node = c.createBufferSource();
+  node.buffer = buf; node.connect(g).connect(c.destination);
+  node.start();
+  return { node, seconds: samples.length/sr };
+}
+
+$("send").onclick = () => {
+  audio();
+  let f;
+  try{ f = encodeFrame($("msg").value); }
+  catch(err){ setPill($("txpill"),"err",err.message); return; }
+
+  const { band, rateIdx, N, reps } = conf();
+  const one = modulate(f.symbols, band, rateIdx, N);
+  const gap = Math.round(sr*0.35);
+  const total = new Float32Array(one.length*reps + gap*(reps-1));
+  for(let r=0;r<reps;r++) total.set(one, r*(one.length+gap));
+
+  const secs = total.length/sr;
+  rxMuted = true;
+  $("send").disabled = true; $("loop").disabled = true;
+  setPill($("txpill"),"busy",`sending · ${secs.toFixed(1)} s`);
+  $("txhint").textContent = `${f.payloadLen} bytes over ${secs.toFixed(1)} s — about `+
+    `${(f.payloadLen*8/(one.length/sr)).toFixed(0)} bits per second of payload.`;
+  $("txprog").classList.add("show");
+
+  const t0 = performance.now();
+  const { node } = playSamples(total, parseInt($("vol").value,10)/100);
+  const tick = setInterval(()=>{
+    $("txprog").firstElementChild.style.width =
+      Math.min(100,(performance.now()-t0)/(secs*1000)*100)+"%";
+  }, 90);
+  node.onended = () => {
+    clearInterval(tick);
+    $("txprog").firstElementChild.style.width = "100%";
+    $("send").disabled=false; $("loop").disabled=false;
+    setPill($("txpill"),"","sent");
+    setTimeout(()=>{
+      $("txprog").classList.remove("show");
+      $("txprog").firstElementChild.style.width="0";
+      if(listening) initRing();
+      rxMuted = false;
+    }, 350);
+  };
+};
+
+$("loop").onclick = () => {
+  audio();
+  let f;
+  try{ f = encodeFrame($("msg").value); }
+  catch(err){ setPill($("txpill"),"err",err.message); return; }
+  const { band, rateIdx, N } = conf();
+  const clean = modulate(f.symbols, band, rateIdx, N);
+  const pad = Math.round(sr*0.4);
+  const sig = new Float32Array(pad + clean.length + pad);
+  for(let i=0;i<sig.length;i++) sig[i] = (Math.random()-0.5)*0.004;
+  for(let i=0;i<clean.length;i++) sig[pad+i] += clean[i]*0.35;
+
+  const wasMuted = rxMuted; rxMuted = true;
+  initRing();
+  setPill($("txpill"),"busy","self-test");
+  const L = ring.length;
+  for(let i=0;i<sig.length;i+=256){
+    const n = Math.min(256, sig.length-i);
+    for(let j=0;j<n;j++) ring[(written+j)%L] = sig[i+j];
+    written += n;
+    pump();
+  }
+  rxMuted = wasMuted;
+  setPill($("txpill"),"","self-test done");
+};
+
+/* ==================================================================
+   CHANNEL PROBE
+================================================================== */
+const probe = { active:false, phase:null, peak:null, floor:null, frames:0, measured:false };
+
+function sweepSamples(){
+  const n = Math.round(sr*3.0);
+  const out = new Float32Array(n);
+  const f0 = 400, f1 = Math.min(20000, sr/2 - 700);
+  const k = Math.log(f1/f0);
+  let ph = 0;
+  for(let i=0;i<n;i++){ ph += 2*Math.PI*(f0*Math.exp(k*i/n))/sr; out[i] = Math.sin(ph); }
+  const fade = Math.round(sr*0.02);
+  for(let i=0;i<fade;i++){
+    const w = 0.5-0.5*Math.cos(Math.PI*i/fade);
+    out[i]*=w; out[n-1-i]*=w;
+  }
+  return out;
+}
+function probeTick(){
+  if(!analyser || !probe.active) return;
+  const bins = probe.peak.length;
+  const buf = new Uint8Array(bins);
+  analyser.getByteFrequencyData(buf);
+  const lo = analyser.minDecibels, hi = analyser.maxDecibels;
+  const toDb = v => lo + (v/255)*(hi-lo);
+  if(probe.phase === "floor"){
+    for(let i=0;i<bins;i++) probe.floor[i] += toDb(buf[i]);
+    probe.frames++;
+  } else if(probe.phase === "hold"){
+    for(let i=0;i<bins;i++){ const d = toDb(buf[i]); if(d > probe.peak[i]) probe.peak[i] = d; }
+  }
+}
+async function runProbe(withSweep){
+  if(!listening){ const ok = await startListening(); if(!ok) return; }
+  analyser.smoothingTimeConstant = 0;
+  const bins = analyser.frequencyBinCount;
+  probe.peak = new Float32Array(bins).fill(-200);
+  probe.floor = new Float32Array(bins);
+  probe.frames = 0; probe.active = true; probe.phase = "floor";
+  $("pov").style.display = "flex";
+  $("pov").textContent = "Measuring background noise — keep quiet";
+  setPill($("ppill"),"busy","measuring noise");
+  await new Promise(r=>setTimeout(r,700));
+  for(let i=0;i<bins;i++) probe.floor[i] = probe.frames ? probe.floor[i]/probe.frames : -110;
+
+  probe.phase = "hold";
+  $("pov").textContent = withSweep ? "Sweeping 400 Hz to 20 kHz"
+                                   : "Listening for a sweep from the other device";
+  setPill($("ppill"),"busy", withSweep ? "sweeping" : "waiting for sweep");
+  if(withSweep){ rxMuted = true; playSamples(sweepSamples(), 0.55); }
+  await new Promise(r=>setTimeout(r, (withSweep?3.4:4.5)*1000));
+
+  probe.active = false; probe.phase = null;
+  analyser.smoothingTimeConstant = 0.4;
+  if(withSweep){ if(listening) initRing(); rxMuted = false; }
+  probe.measured = true;
+  setPill($("ppill"),"on","measured");
+  $("pov").style.display = "none";
+  drawProbe(); scoreBands();
+}
+function bandSnr(key){
+  if(!probe.measured) return -99;
+  const b = BANDS[key], bins = probe.peak.length, hz = (sr/2)/bins;
+  const freqs = [...b.syncs, ...b.tones];
+  let sum = 0;
+  for(const f of freqs){
+    const i = Math.min(bins-1, Math.round(f/hz));
+    let sig=-200, flr=0, n=0;
+    for(let k=i-1;k<=i+1;k++){
+      if(k<0||k>=bins) continue;
+      if(probe.peak[k]>sig) sig=probe.peak[k];
+      flr+=probe.floor[k]; n++;
+    }
+    sum += sig - flr/Math.max(1,n);
+  }
+  return sum/freqs.length;
+}
+function scoreBands(){
+  $("verdicts").hidden = false;
+  const scores = BAND_KEYS.map(k=>({k, s:bandSnr(k)}));
+  const best = scores.reduce((a,b)=> b.s>a.s ? b : a);
+  for(const {k,s} of scores){
+    const el = $("vd-"+k);
+    el.className = "vd" + (k===best.k ? " best" : s<12 ? " weak" : "");
+    el.querySelector(".vs").textContent = (s>=0?"+":"")+s.toFixed(0)+" dB";
+    el.querySelector(".vt").textContent =
+      s>=26 ? "Strong — use this" : s>=14 ? "Usable" :
+      s>=7  ? "Marginal, slow the symbols down" : "Too weak to trust";
+  }
+  $("band").value = best.k;
+  $("phint").textContent = `The ${BANDS[best.k].name.toLowerCase()} band came out `+
+    `${bandSnr(best.k).toFixed(0)} dB above the noise floor, strongest of the three, so it is now `+
+    `selected for sending. Run this on the other device too — the weaker measurement is what limits the link.`;
+}
+$("selftest").onclick = ()=>runProbe(true);
+$("measure").onclick  = ()=>runProbe(false);
+$("sweep").onclick = ()=>{
+  audio(); rxMuted = true;
+  const { seconds } = playSamples(sweepSamples(), 0.55);
+  setPill($("ppill"),"busy","playing sweep");
+  setTimeout(()=>{
+    if(listening) initRing();
+    rxMuted = false;
+    setPill($("ppill"), probe.measured?"on":"", probe.measured?"measured":"not measured");
+  }, seconds*1000+250);
+};
+
+/* ---------------- canvases ---------------- */
+const BAND_COLORS = { low:"#63d4e0", mid:"#7fd88f", high:"#d98bd4" };
+const pc = $("pc"), pctx = pc.getContext("2d");
+function drawProbe(){
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  const W = pc.width = pc.clientWidth*dpr, H = pc.height = pc.clientHeight*dpr;
+  pctx.clearRect(0,0,W,H);
+  if(!probe.measured) return;
+  const bins = probe.peak.length, nyq = sr/2;
+  const xOf = f => (f/nyq)*W;
+  const top=-10, bot=-110, yOf = d => H - ((d-bot)/(top-bot))*H;
+  for(const k of BAND_KEYS){
+    const b = BANDS[k];
+    const x0 = xOf(b.syncs[0]-400), x1 = xOf(b.tones[3]+400);
+    pctx.fillStyle = BAND_COLORS[k]; pctx.globalAlpha = .07;
+    pctx.fillRect(x0,0,x1-x0,H); pctx.globalAlpha = 1;
+    pctx.fillStyle = BAND_COLORS[k];
+    pctx.font = `500 ${10*dpr}px "IBM Plex Mono",monospace`;
+    pctx.fillText(b.name.toUpperCase(), x0+4*dpr, 13*dpr);
+  }
+  pctx.strokeStyle = "#333a5e"; pctx.lineWidth = dpr;
+  for(const f of [2000,6000,10000,14000,18000,22000]){
+    if(f>nyq) continue;
+    pctx.beginPath(); pctx.moveTo(xOf(f),0); pctx.lineTo(xOf(f),H); pctx.stroke();
+  }
+  pctx.strokeStyle="#e4657a"; pctx.globalAlpha=.55; pctx.lineWidth=1.2*dpr; pctx.beginPath();
+  for(let i=0;i<bins;i++){ const x=(i/bins)*W, y=yOf(probe.floor[i]); i?pctx.lineTo(x,y):pctx.moveTo(x,y); }
+  pctx.stroke(); pctx.globalAlpha=1;
+  pctx.strokeStyle="#dde2f3"; pctx.lineWidth=1.6*dpr; pctx.beginPath();
+  for(let i=0;i<bins;i++){ const x=(i/bins)*W, y=yOf(probe.peak[i]); i?pctx.lineTo(x,y):pctx.moveTo(x,y); }
+  pctx.stroke();
+  pctx.font = `${9.5*dpr}px "IBM Plex Mono",monospace`;
+  pctx.fillStyle="#868fb4"; pctx.fillText("response", 6*dpr, H-16*dpr);
+  pctx.fillStyle="#e4657a"; pctx.fillText("noise floor", 6*dpr, H-4*dpr);
+}
+const rb = $("ribbon"), rctx = rb.getContext("2d");
+function drawRibbon(){
+  if(!listening || !analyser) return;
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  const W = rb.width = rb.clientWidth*dpr, H = rb.height = rb.clientHeight*dpr;
+  const bins = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(bins);
+  rctx.clearRect(0,0,W,H);
+  const nyq = sr/2;
+  for(const k of BAND_KEYS){
+    const b = BANDS[k];
+    const x0 = (b.syncs[0]-300)/nyq*W, x1 = (b.tones[3]+300)/nyq*W;
+    rctx.fillStyle = BAND_COLORS[k]; rctx.globalAlpha=.10;
+    rctx.fillRect(x0,0,x1-x0,H); rctx.globalAlpha=1;
+  }
+  const bw = W/bins.length;
+  rctx.fillStyle = "#c8cfe8";
+  for(let i=0;i<bins.length;i++){
+    const v = (bins[i]/255)*H;
+    rctx.fillRect(i*bw, H-v, Math.max(bw-0.4,0.5), v);
+  }
+  requestAnimationFrame(drawRibbon);
+}
+window.addEventListener("resize", ()=>{ drawProbe(); });
+
+/* ---------------- tone generator ---------------- */
+let osc=null, oscGain=null;
+const slideFreq = v => Math.round(20*Math.pow(1000, v/1000));
+$("fslide").addEventListener("input", e => {
+  const f = slideFreq(+e.target.value);
+  $("fread").textContent = f>=1000 ? (f/1000).toFixed(2)+"k" : String(f);
+  if(osc) osc.frequency.setTargetAtTime(f, ctx.currentTime, 0.01);
+});
+$("wave").addEventListener("change", e => { if(osc) osc.type = e.target.value; });
+$("tone").onclick = () => {
+  const c = audio();
+  if(osc){
+    oscGain.gain.setTargetAtTime(0, c.currentTime, 0.015);
+    const o = osc; setTimeout(()=>{ try{o.stop()}catch(e){} }, 90);
+    osc = null;
+    $("tone").textContent="Play"; $("tone").classList.remove("live");
+    return;
+  }
+  osc = c.createOscillator();
+  osc.type = $("wave").value;
+  osc.frequency.value = slideFreq(+$("fslide").value);
+  oscGain = c.createGain(); oscGain.gain.value = 0;
+  osc.connect(oscGain).connect(c.destination);
+  osc.start();
+  oscGain.gain.setTargetAtTime(0.18, c.currentTime, 0.02);
+  $("tone").textContent="Stop"; $("tone").classList.add("live");
+};
+
+/* ---------------- settings in the URL ---------------- */
+(function readHash(){
+  const p = new URLSearchParams(location.hash.slice(1));
+  if(BANDS[p.get("b")]) $("band").value = p.get("b");
+  if(["0","1","2"].includes(p.get("r"))) $("rate").value = p.get("r");
+  if(["1","2","3"].includes(p.get("n"))) $("reps").value = p.get("n");
+})();
+$("share").onclick = async () => {
+  const p = new URLSearchParams({ b:$("band").value, r:$("rate").value, n:$("reps").value });
+  const url = location.origin + location.pathname + "#" + p.toString();
+  try{ await navigator.clipboard.writeText(url); $("share").textContent = "Link copied"; }
+  catch(e){ $("share").textContent = url; }
+  setTimeout(()=>{ $("share").textContent = "Copy link with these settings"; }, 2200);
+};
+
+$("vol").addEventListener("input", e => { $("vollab").textContent = e.target.value+"%"; });
+function countBytes(){
+  $("bytecount").textContent = new TextEncoder().encode($("msg").value).length+" / 200 bytes";
+}
+$("msg").addEventListener("input", countBytes);
+$("fslide").dispatchEvent(new Event("input"));
+countBytes();
+resetRx(0);
+</script>
+</body>
+</html>
