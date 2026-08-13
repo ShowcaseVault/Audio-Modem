@@ -791,6 +791,15 @@ function finishEntry(state, timedOut){
 function deliverChunk(payload, info, err){
   const { msgId, chunkIdx, chunkTotal } = info;
   let state = inProgress.get(msgId);
+  if(state && state.total !== chunkTotal){
+    // msgId is only 4 bits and wraps; a chunkTotal mismatch means this is an
+    // unrelated message reusing a stale, still-in-flight id — retire the old
+    // entry as incomplete rather than splicing new chunks into it.
+    clearTimeout(state.timer);
+    inProgress.delete(msgId);
+    finishEntry(state, true);
+    state = null;
+  }
   if(!state){
     state = { el:newEntry(), text:new Array(chunkTotal).fill(""), got:new Set(),
               failed:new Set(), total:chunkTotal, startedAt:new Date().toLocaleTimeString(),
