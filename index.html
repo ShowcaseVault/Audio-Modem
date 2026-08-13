@@ -211,7 +211,7 @@ footer code{color:var(--ink)}
     </div>
     <div class="row field">
       <div>
-        <label for="band">Tone band</label>
+        <label for="band" title="Which slice of the audio spectrum carries the signal. Lower bands are more audible but usually more reliable; higher bands are near-silent but need better hardware.">Tone band</label>
         <select id="band">
           <option value="low">Low · 2.6–6.5 kHz · audible</option>
           <option value="mid" selected>Mid · 9.6–13.5 kHz · faint</option>
@@ -219,7 +219,7 @@ footer code{color:var(--ink)}
         </select>
       </div>
       <div>
-        <label for="rate">Symbol length</label>
+        <label for="rate" title="How long each tone plays before switching to the next. Longer symbols survive echo and noise better but send fewer bits per second.">Symbol length</label>
         <select id="rate">
           <option value="0">40 ms · survives echo</option>
           <option value="1" selected>20 ms · balanced</option>
@@ -229,7 +229,7 @@ footer code{color:var(--ink)}
     </div>
     <div class="row field">
       <div>
-        <label for="reps">Repeats</label>
+        <label for="reps" title="Play the same message multiple times back to back. Doesn't add error correction — it just gives a weak or interrupted link extra chances to get one clean copy through.">Repeats</label>
         <select id="reps">
           <option value="1" selected>Send once</option>
           <option value="2">Send twice</option>
@@ -237,10 +237,14 @@ footer code{color:var(--ink)}
         </select>
       </div>
       <div>
-        <label for="vol">Level <b id="vollab">75%</b></label>
+        <label for="vol" title="Output loudness of the transmitted tones, as a percentage of full volume. Louder generally carries further and survives more noise, but can distort on cheap speakers if pushed too high.">Level <b id="vollab">75%</b></label>
         <input type="range" id="vol" min="10" max="100" value="75">
       </div>
     </div>
+    <p class="hint" style="margin-top:-4px;margin-bottom:2px">
+      <b>Tone band</b> picks the frequency range · <b>Symbol length</b> trades speed for reliability ·
+      <b>Repeats</b> re-plays the same message for extra chances · <b>Level</b> is playback volume.
+    </p>
     <div class="btnrow">
       <button class="primary" id="send">Send</button>
       <button id="loop">Self-test</button>
