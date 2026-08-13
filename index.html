@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#151929">
 <meta name="description" content="Send text messages between devices using only a speaker and a microphone.">
-<title>Airwave — messages over sound</title>
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="Airwave — messages over sound">
+<meta property="og:description" content="Send text messages between devices using only a speaker and a microphone. No radio, no network, no pairing.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23151929'/%3E%3Cpath d='M8 20a8 8 0 0 1 16 0M11 22a5 5 0 0 1 10 0M14 24a2 2 0 0 1 4 0' stroke='%23f5a65b' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Airwave - Acoustic Modem</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -18,58 +24,60 @@
   --display:"Space Grotesk",system-ui,-apple-system,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-  --pad:16px;
+  --pad:20px;
+  --gap:18px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:radial-gradient(900px 420px at 12% -8%,#232a4e 0%,transparent 62%),var(--field);
-  color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;
+  color:var(--ink);font-family:var(--body);line-height:1.55;-webkit-font-smoothing:antialiased;
   padding-bottom:env(safe-area-inset-bottom)}
-.wrap{max-width:1140px;margin:0 auto;padding:20px var(--pad) 56px}
-@media(min-width:700px){:root{--pad:24px}}
+.wrap{max-width:1180px;margin:0 auto;padding:28px var(--pad) 72px}
+@media(min-width:700px){:root{--pad:32px;--gap:22px}}
+@media(min-width:1100px){:root{--pad:40px}}
 
-header{margin-bottom:20px}
+header{margin-bottom:32px}
 .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--dim);display:flex;gap:6px 14px;flex-wrap:wrap;margin-bottom:10px}
-h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,8vw,50px);
-  letter-spacing:-.025em;line-height:1.02;margin:0 0 8px}
+  color:var(--dim);display:flex;gap:7px 16px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,8vw,54px);
+  letter-spacing:-.025em;line-height:1.05;margin:0 0 14px}
 h1 em{font-style:normal;color:var(--t2)}
-.sub{color:var(--dim);max-width:60ch;margin:0;font-size:14.5px}
+.sub{color:var(--dim);max-width:62ch;margin:0;font-size:15.5px;line-height:1.6}
 
-.ribbon{margin-top:18px;border:1px solid var(--rule);border-radius:4px;background:var(--sunk);
+.ribbon{margin-top:26px;border:1px solid var(--rule);border-radius:6px;background:var(--sunk);
   position:relative;overflow:hidden}
-.ribbon canvas{display:block;width:100%;height:58px}
+.ribbon canvas{display:block;width:100%;height:64px}
 .ribbon .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--dim);text-align:center;padding:0 12px}
+  color:var(--dim);text-align:center;padding:0 16px}
 .ribbon .scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;
-  color:var(--dim);padding:0 6px 4px;letter-spacing:.08em}
+  color:var(--dim);padding:0 8px 6px;letter-spacing:.08em}
 
-.grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:20px}
+.grid{display:grid;grid-template-columns:1fr;gap:var(--gap);margin-top:var(--gap)}
 @media(min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1.08fr)}}
 .panel{background:linear-gradient(180deg,var(--field2),#191e33);border:1px solid var(--rule);
-  border-radius:5px;padding:18px}
-.ph{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--dim);margin:0 0 14px;font-weight:500;display:flex;justify-content:space-between;
+  border-radius:7px;padding:22px}
+.ph{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 18px;font-weight:500;display:flex;justify-content:space-between;
   align-items:center;gap:10px}
 
 label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  text-transform:uppercase;color:var(--dim);margin-bottom:7px}
 label b{color:var(--ink);font-weight:500}
 textarea,select{width:100%;background:var(--sunk);color:var(--ink);border:1px solid var(--rule);
-  border-radius:4px;padding:11px 12px;font-family:var(--mono);font-size:15px;min-height:44px}
-textarea{resize:vertical;min-height:82px;line-height:1.45}
+  border-radius:5px;padding:13px 14px;font-family:var(--mono);font-size:15px;min-height:48px}
+textarea{resize:vertical;min-height:96px;line-height:1.5}
 select{appearance:none;cursor:pointer;
   background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);
   background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;
   background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:34px}
-.field{margin-bottom:13px}
-.row{display:flex;gap:11px;flex-wrap:wrap}
+.field{margin-bottom:18px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
 .row>*{flex:1 1 145px;min-width:0}
-input[type=range]{width:100%;accent-color:var(--t2);height:30px;margin:0}
+input[type=range]{width:100%;accent-color:var(--t2);height:34px;margin:0}
 button{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
-  background:var(--field3);color:var(--ink);border:1px solid var(--rule2);border-radius:4px;
-  padding:0 16px;min-height:44px;cursor:pointer;transition:background .15s,border-color .15s}
+  background:var(--field3);color:var(--ink);border:1px solid var(--rule2);border-radius:5px;
+  padding:0 18px;min-height:48px;cursor:pointer;transition:background .15s,border-color .15s}
 button:hover:not(:disabled){background:#2f3766;border-color:#5a64a0}
 button:disabled{opacity:.38;cursor:not-allowed}
 button.primary{background:var(--t2);border-color:var(--t2);color:#1b1204;font-weight:600}
@@ -77,9 +85,10 @@ button.primary:hover:not(:disabled){background:#ffb975;border-color:#ffb975}
 button.live{background:var(--alert);border-color:var(--alert);color:#fff}
 button.wide{width:100%}
 :focus-visible{outline:2px solid var(--t0);outline-offset:2px}
-.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.btnrow{display:flex;gap:12px;flex-wrap:wrap}
 .btnrow>button{flex:1 1 auto}
-.hint{font-size:12.5px;color:var(--dim);margin:11px 0 0;line-height:1.55}
+@media(max-width:480px){.btnrow{flex-direction:column}.btnrow>button{flex:1 1 100%}}
+.hint{font-size:13px;color:var(--dim);margin:14px 0 0;line-height:1.6}
 .pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
   padding:4px 9px;border-radius:3px;border:1px solid var(--rule);color:var(--dim);white-space:nowrap}
 .pill.on{border-color:var(--ok);color:var(--ok)}
@@ -89,8 +98,8 @@ button.wide{width:100%}
 .prog.show{display:block}
 .prog i{display:block;height:100%;width:0;background:var(--t2);transition:width .12s linear}
 
-.bins{background:var(--sunk);border:1px solid var(--rule);border-radius:4px;padding:14px;margin-bottom:14px}
-.bin{display:grid;grid-template-columns:34px 1fr 44px;gap:9px;align-items:center;margin-bottom:7px}
+.bins{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:18px;margin-bottom:18px}
+.bin{display:grid;grid-template-columns:34px 1fr 44px;gap:10px;align-items:center;margin-bottom:9px}
 .bin:last-of-type{margin-bottom:0}
 .bin .nm{font-family:var(--mono);font-size:10px;letter-spacing:.05em}
 .bin .vl{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
@@ -106,48 +115,53 @@ button.wide{width:100%}
 .caption{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--dim);margin-top:9px;line-height:1.5}
 
-.log{max-height:250px;overflow-y:auto;font-family:var(--mono)}
-.msg{border-left:2px solid var(--t0);padding:9px 0 9px 11px;margin-bottom:8px;background:var(--sunk);
-  border-radius:0 3px 3px 0}
+.log{max-height:280px;overflow-y:auto;font-family:var(--mono)}
+.msg{border-left:2px solid var(--t0);padding:11px 0 11px 13px;margin-bottom:10px;background:var(--sunk);
+  border-radius:0 4px 4px 0}
 .msg.bad{border-left-color:var(--alert)}
 .msg.dup{border-left-color:var(--rule2);opacity:.55}
 .msg .meta{font-size:9.5px;color:var(--dim);letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
 .msg .txt{font-size:14px;word-break:break-word;white-space:pre-wrap}
 .empty{color:var(--dim);font-family:var(--mono);font-size:12px;padding:12px 0}
 
-.probe{margin-top:16px}
-.pcanvas{position:relative;background:var(--sunk);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.probe{margin-top:var(--gap)}
+.pcanvas{position:relative;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;overflow:hidden}
 .pcanvas canvas{display:block;width:100%;height:190px}
 @media(min-width:700px){.pcanvas canvas{height:220px}}
 .pcanvas .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
   text-align:center;padding:0 18px;line-height:1.8}
-.verdicts{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+.verdicts{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
 @media(min-width:620px){.verdicts{grid-template-columns:repeat(3,1fr)}}
-.vd{border:1px solid var(--rule);border-radius:4px;padding:10px 12px;background:var(--sunk)}
+.vd{border:1px solid var(--rule);border-radius:5px;padding:13px 14px;background:var(--sunk)}
 .vd .vn{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;margin-bottom:3px}
 .vd .vs{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums}
 .vd .vt{font-size:11.5px;color:var(--dim);margin-top:1px}
 .vd.best{border-color:var(--ok)} .vd.best .vs{color:var(--ok)}
 .vd.weak .vs{color:var(--alert)}
 
-details{margin-top:16px;border:1px solid var(--rule);border-radius:5px;background:var(--field2)}
-summary{padding:15px 18px;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;
+details{margin-top:var(--gap);border:1px solid var(--rule);border-radius:7px;background:var(--field2)}
+summary{padding:17px 20px;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;
   text-transform:uppercase;color:var(--dim);list-style:none;display:flex;justify-content:space-between;
-  align-items:center;min-height:44px;gap:12px}
+  align-items:center;min-height:48px;gap:12px}
 summary::-webkit-details-marker{display:none}
 summary::after{content:"+";font-size:16px;color:var(--rule2)}
 details[open] summary::after{content:"\2212"}
 details[open] summary{border-bottom:1px solid var(--rule);color:var(--ink)}
-.dbody{padding:18px}
+.dbody{padding:22px}
 .freqread{font-family:var(--mono);font-size:clamp(26px,7vw,40px);font-weight:600;
   letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
 .freqread small{font-size:13px;color:var(--dim);font-weight:400;letter-spacing:.1em}
-.spec table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
-.spec td{padding:7px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.spec table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+.spec td{padding:10px 0;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.6}
 .spec tr:last-child td{border-bottom:none}
-.spec td:first-child{color:var(--dim);width:36%;padding-right:12px}
-footer{margin-top:26px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.8}
+.spec td:first-child{color:var(--dim);width:34%;padding-right:16px}
+.howto{width:100%;border-collapse:collapse;font-size:14px}
+.howto td{padding:12px 0;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.6}
+.howto tr:last-child td{border-bottom:none}
+.howto td:first-child{font-family:var(--mono);color:var(--t2);font-weight:600;width:26px;padding-right:14px}
+.howto b{color:var(--ink)}
+footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.9}
 footer code{color:var(--ink)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -169,6 +183,24 @@ footer code{color:var(--ink)}
     <div class="scale"><span>0</span><span>6k</span><span>12k</span><span>18k</span><span id="nyq">24k</span></div>
   </div>
 </header>
+
+<details open>
+  <summary>How to use it</summary>
+  <div class="dbody">
+    <table class="howto">
+      <tr><td>1</td><td><b>Check the channel first (optional but recommended).</b> On each device, open <em>Channel check</em> below and press "Check this device." It tells you which band this speaker/microphone pair handles best, so you're not guessing.</td></tr>
+      <tr><td>2</td><td><b>Start listening on the receiving device.</b> Press "Start listening" in the Receive panel. It watches all nine sync tones at once, so it doesn't need to be told which band or symbol length the sender will use.</td></tr>
+      <tr><td>3</td><td><b>Send from the other device.</b> Type a message, pick a band and symbol length (or leave the defaults), and press Send.</td></tr>
+      <tr><td>4</td><td><b>Read the result.</b> A decoded message appears in the receiver's log with the band, symbol length and signal margin it arrived with. A failed frame says why — usually "too weak" or "could not lock," both fixed by trying a longer symbol length or a stronger band.</td></tr>
+    </table>
+    <p class="hint">
+      <b>Does it support sending and receiving at the same time?</b> No — Airwave is half-duplex, one direction at a time, on purpose. A device's own speaker output would otherwise leak straight into its own microphone input and drown out anything real. The page enforces this automatically: pressing Send mutes this device's receiver for the duration of the transmission, then un-mutes it. You don't need to stop listening manually before sending — just don't expect a device to receive <em>while</em> it's actively playing a message. To hold a back-and-forth conversation, take turns, the same as a two-way radio.
+    </p>
+    <p class="hint">
+      Band and symbol length are detected automatically on receive, so the two devices never need matching settings — only the "Check this device" step is per-device, everything else adapts on the fly.
+    </p>
+  </div>
+</details>
 
 <div class="grid">
   <section class="panel">
