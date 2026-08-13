@@ -8,6 +8,15 @@ Hamming(7,4) code and the whole body is block-interleaved, so a burst of noise
 damages many codewords slightly instead of one codeword fatally. A CRC-16
 catches whatever the error correction cannot repair.
 
+**Live demo:** [airwave.vishalsigdel.com.np](https://airwave.vishalsigdel.com.np)
+
+## Deployment
+
+Served via GitHub Pages on a custom domain. The `CNAME` file at the repo root
+pins the domain to `airwave.vishalsigdel.com.np`; point a DNS `CNAME` record
+for that host at `<github-username>.github.io`, then enable Pages for the
+`main` branch in the repo settings.
+
 ## Running it
 
 Microphone access requires a secure origin. GitHub Pages works; so does
