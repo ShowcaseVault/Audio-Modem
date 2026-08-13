@@ -156,71 +156,16 @@ after correction is reported as failed, not delivered with silently wrong
 content — Airwave never surfaces a message that hasn't been positively
 verified.
 
-## Chunking: many small frames instead of one large one
-
-Everything above describes a single frame. For a message longer than 32
-bytes, Airwave doesn't grow one frame to fit it — it splits the payload
-into up to 16 independent frames ("chunks") of up to 32 bytes each, each
-carrying its own full carrier, sync, header and CRC-16, and plays them one
-after another with a short gap between.
-
-This is a direct consequence of how interleaving and Hamming interact with
-frame size:
-
-- **Interleaving depth scales with frame size.** A block interleaver
-  spreads each 7-bit codeword's bits across the *entire* body of one
-  frame. As a frame grows, so does the depth of interleaving needed to keep
-  a fixed-length noise burst from corrupting more than one bit in any
-  single codeword. A very long single frame either needs proportionally
-  deeper interleaving (more latency, since nothing decodes until the whole
-  frame arrives) or accepts that a longer echo/noise burst can now damage
-  two bits in the same codeword — exactly the case Hamming(7,4) cannot fix.
-- **One bad symbol shouldn't cost the whole message.** In a single giant
-  frame, a CRC-16 failure discards every byte, because there's no way to
-  tell which part of the payload the miscorrection actually landed in.
-  Splitting into chunks bounds the blast radius of a bad decode to 32 bytes
-  — the rest of the message stays intact and readable.
-- **Latency to first visible text.** Nothing can be shown until an entire
-  frame's bits have arrived, because the interleaver scrambles bit order
-  across the whole body. A large single frame means a large silent wait
-  before any text appears. Small independent frames mean the first chunk's
-  text can render while the last chunk hasn't been sent yet.
-
-Each chunk's header carries three extra fields beyond length and checksum:
-a 4-bit **message ID**, a 4-bit **chunk index**, and a 4-bit **chunk
-count** (stored on the wire as count-minus-one, since indices go up to 16
-but a nibble only holds 0–15). The message ID lets the receiver
-distinguish chunks belonging to two different messages that happen to
-overlap in time; the index and count let it assemble chunks correctly even
-if the acoustic channel somehow reordered them, and let it report exactly
-which chunk numbers are missing if delivery is incomplete — rather than
-just failing the message outright.
-
-The header's own error protection (Hamming(7,4) per nibble, majority vote
-across three repeats) had to grow to carry this extra metadata: 2 header
-bytes became 4, so the header now spans 8 Hamming codewords instead of 4.
-This roughly doubles per-chunk fixed overhead — a cost paid once per
-32-byte chunk rather than once per whole message, which is precisely the
-trade this design makes: a bit more overhead, in exchange for bounded
-failure and progressive display.
-
 ## Frame layout, end to end
 
     carrier   8 symbols, alternating tones -> lets receiver gain settle
     sync      4 symbols, 1-of-9 tones      -> identifies band + symbol rate
-    header    msgId+chunkIdx, chunkTotal, length, checksum
-              -> 8x Hamming(7,4), sent 3x, majority-voted
-    body      chunk payload (<=32 bytes) + CRC-16
-              -> nibbles -> Hamming(7,4) -> interleaved
-
-...repeated once per chunk, back to back with a short gap, for however
-many chunks the message needed.
+    header    length + checksum, 4x Hamming(7,4), sent 3x, majority-voted
+    body      payload + CRC-16 -> nibbles -> Hamming(7,4) -> interleaved
 
 Every layer exists because of a specific, named failure mode: FSK for
 multipath-proof detection, Gray coding to make tone-confusion single-bit-
 cheap, Hamming to fix that single bit, interleaving to keep burst errors
 from ever exceeding one bad bit per codeword, majority-voting to protect
-the header specifically, CRC-16 as a hard backstop that catches whatever
-slips through everything else uncorrected, and chunking to bound how much
-of a message one bad decode can take down and let good chunks render
-before the last one has even been sent.
+the header specifically, and CRC-16 as a hard backstop that catches
+whatever slips through everything else uncorrected.

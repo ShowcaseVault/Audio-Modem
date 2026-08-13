@@ -6,11 +6,7 @@ microphone. No radio, no network, no pairing.
 Four audio tones carry two bits each (4-FSK). Every nibble is protected by a
 Hamming(7,4) code and the whole body is block-interleaved, so a burst of noise
 damages many codewords slightly instead of one codeword fatally. A CRC-16
-catches whatever the error correction cannot repair. Messages over 32 bytes
-are split into independent chunks, each with its own CRC, so a bad chunk
-doesn't take the rest of the message down and text renders as chunks arrive.
-
-For the full theory behind these choices, see [airwave.md](airwave.md).
+catches whatever the error correction cannot repair.
 
 **Live demo:** [airwave.vishalsigdel.com.np](https://airwave.vishalsigdel.com.np)
 
@@ -71,11 +67,8 @@ another rate shifts that tone elsewhere.
 
     carrier   8 symbols, outer two tones alternating (lets AGC settle)
     sync      4 symbols, one of nine tones -> identifies band + symbol length
-    header    msgId+chunkIdx, chunkTotal, length, check -> 8x Hamming(7,4), sent 3x, majority voted
-    body      chunk payload (<=32 bytes) + CRC-16 -> nibbles -> Hamming(7,4) -> interleaved
-
-...repeated once per chunk for messages longer than 32 bytes, up to 16 chunks
-(512 bytes) per message.
+    header    length + 8-bit check, 4x Hamming(7,4), sent 3x, majority voted
+    body      payload + CRC-16 -> nibbles -> Hamming(7,4) -> interleaved
 
 Symbols are Gray-coded across the four tones, so mistaking a tone for its
 neighbour costs one bit rather than two — exactly the error Hamming repairs.

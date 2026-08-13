@@ -121,11 +121,7 @@ button.wide{width:100%}
 .msg.bad{border-left-color:var(--alert)}
 .msg.dup{border-left-color:var(--rule2);opacity:.55}
 .msg .meta{font-size:9.5px;color:var(--dim);letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
-.msg .txt{font-size:14px;word-break:break-word;white-space:pre-wrap;min-height:1.4em}
-.chunkbar{display:flex;gap:3px;margin-top:8px;flex-wrap:wrap}
-.cseg{width:14px;height:6px;border-radius:1px;background:var(--rule);flex:none}
-.cseg.ok{background:var(--ok)}
-.cseg.bad{background:var(--alert)}
+.msg .txt{font-size:14px;word-break:break-word;white-space:pre-wrap}
 .empty{color:var(--dim);font-family:var(--mono);font-size:12px;padding:12px 0}
 
 .probe{margin-top:var(--gap)}
@@ -196,7 +192,6 @@ footer code{color:var(--ink)}
       <tr><td>2</td><td><b>Start listening on the receiving device.</b> Press "Start listening" in the Receive panel. It watches all nine sync tones at once, so it doesn't need to be told which band or symbol length the sender will use.</td></tr>
       <tr><td>3</td><td><b>Send from the other device.</b> Type a message, pick a band and symbol length (or leave the defaults), and press Send.</td></tr>
       <tr><td>4</td><td><b>Read the result.</b> A decoded message appears in the receiver's log with the band, symbol length and signal margin it arrived with. A failed frame says why — usually "too weak" or "could not lock," both fixed by trying a longer symbol length or a stronger band.</td></tr>
-      <tr><td>·</td><td><b>Longer messages arrive in chunks.</b> Anything over 32 bytes is split into several small frames and sent back to back. The log entry fills in as each chunk lands — you'll see a row of small bars under the message, one per chunk, turning green as they arrive — so you can read the start of a long message before the end has even been sent. If a chunk never arrives, its bar stays grey/red and the message reports which chunk numbers are missing after a short wait, rather than silently guessing at the gap.</td></tr>
     </table>
     <p class="hint">
       <b>Does it support sending and receiving at the same time?</b> No — Airwave is half-duplex, one direction at a time, on purpose. A device's own speaker output would otherwise leak straight into its own microphone input and drown out anything real. The page enforces this automatically: pressing Send mutes this device's receiver for the duration of the transmission, then un-mutes it. You don't need to stop listening manually before sending — just don't expect a device to receive <em>while</em> it's actively playing a message. To hold a back-and-forth conversation, take turns, the same as a two-way radio.
@@ -211,8 +206,8 @@ footer code{color:var(--ink)}
   <section class="panel">
     <h2 class="ph">Send <span class="pill" id="txpill">idle</span></h2>
     <div class="field">
-      <label for="msg">Message <b id="bytecount">0 / 512 bytes</b></label>
-      <textarea id="msg" maxlength="512" placeholder="Type something…">hello from across the room</textarea>
+      <label for="msg">Message <b id="bytecount">0 / 200 bytes</b></label>
+      <textarea id="msg" maxlength="200" placeholder="Type something…">hello from across the room</textarea>
     </div>
     <div class="row field">
       <div>
@@ -255,7 +250,7 @@ footer code{color:var(--ink)}
       <button id="loop">Self-test</button>
     </div>
     <div class="prog" id="txprog"><i></i></div>
-    <p class="hint" id="txhint">Self-test runs the first chunk's encoder into the decoder with no sound at all, so you can confirm the codec works before blaming the room.</p>
+    <p class="hint" id="txhint">Self-test runs the encoder into the decoder with no sound at all, so you can confirm the codec works before blaming the room.</p>
   </section>
 
   <section class="panel">
@@ -320,10 +315,9 @@ footer code{color:var(--ink)}
   <summary>How a frame is built</summary>
   <div class="dbody">
     <table>
-      <tr><td>Chunking</td><td>A message longer than 32 bytes is split into up to 16 chunks, each sent as its own independent frame with its own carrier, sync, header and CRC. A chunk that fails to decode doesn't take the rest of the message down with it, and the receiver shows text as each chunk lands rather than waiting for the whole message.</td></tr>
       <tr><td>Carrier</td><td>Eight symbols alternating between the outer two tones, so the receiver's automatic gain control settles before anything meaningful arrives.</td></tr>
       <tr><td>Sync</td><td>Four symbols of a tone unique to each band-and-rate combination. Nine such tones exist, so hearing one identifies both the band and the symbol length — the receiver is never told either.</td></tr>
-      <tr><td>Header</td><td>Message ID, chunk index, chunk count, payload length and an 8-bit check, as eight Hamming(7,4) codewords, sent three times over. Majority vote across the copies, then error correction on the result. The message ID and chunk index let the receiver reassemble chunks that arrive in any order and tell one message's chunks apart from another's.</td></tr>
+      <tr><td>Header</td><td>Payload length plus an 8-bit check, as four Hamming(7,4) codewords, sent three times over. Majority vote across the copies, then error correction on the result.</td></tr>
       <tr><td>Body</td><td>Payload and CRC-16 split into nibbles, one Hamming(7,4) codeword per nibble, then block-interleaved so a burst of noise damages many codewords slightly rather than one codeword fatally.</td></tr>
       <tr><td>Symbols</td><td>Two bits per symbol, Gray-coded across the four tones, so mistaking a tone for its neighbour costs one bit instead of two — exactly the error Hamming repairs.</td></tr>
       <tr><td>Clock</td><td>Rather than trusting a measured edge, the receiver tries a spread of clock offsets across the whole sync burst, ranks them by how confidently the tones separate, and keeps the first whose header check passes. Multipath can shift an apparent edge by whole symbols; it cannot forge a valid header.</td></tr>
@@ -355,10 +349,9 @@ const BANDS = {
 };
 const BAND_KEYS = ["low","mid","high"];
 const RATES = [0.04, 0.02, 0.01];
-const CARRIER_SYMS = 8, SYNC_SYMS = 4, HREP = 3, HNIB = 8;
-const HBITS = HREP * HNIB * 7;                 // 168
-const HDR_SYMS = HBITS/2;                      // 84
-const CHUNK_BYTES = 32;                        // payload bytes per acoustic chunk
+const CARRIER_SYMS = 8, SYNC_SYMS = 4, HREP = 3, HNIB = 4;
+const HBITS = HREP * HNIB * 7;                 // 84
+const HDR_SYMS = HBITS/2;                      // 42
 const TONE_FOR_VAL = [0,1,3,2], VAL_FOR_TONE = [0,1,3,2];
 
 const SYNC_LIST = [];
@@ -406,9 +399,9 @@ function crc16(bytes){
     for(let i=0;i<8;i++) c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF; }
   return c;
 }
-function hdrCheck(bytes){
+function hdrCheck(len){
   let c=0xFF;
-  for(const b of [...bytes,0x5A]){ c^=b;
+  for(const b of [len,0x5A]){ c^=b;
     for(let i=0;i<8;i++) c=(c&0x80)?((c<<1)^0x07)&0xff:(c<<1)&0xff; }
   return c;
 }
@@ -426,34 +419,11 @@ function deinterleave(bits, rows){
   return w;
 }
 
-/* ---------------- encoder ----------------
-   A message over CHUNK_BYTES is split into several independent acoustic
-   frames. Each carries its own carrier+sync+header+body+CRC, so a chunk
-   that fails to decode doesn't take the rest of the message down with it,
-   and the receiver can show text as each chunk lands rather than waiting
-   for the whole message. msgId ties a run of chunks together; chunkIdx/
-   chunkTotal (both 0-15) tell the receiver how many to expect and which
-   is which, regardless of arrival order. */
-let nextMsgId = 0;
-function encodeMessage(text){
+/* ---------------- encoder ---------------- */
+function encodeFrame(text){
   const payload = Array.from(new TextEncoder().encode(text));
   if(!payload.length) throw new Error("Nothing to send");
-
-  const MAX_BYTES = CHUNK_BYTES*16;
-  if(payload.length > MAX_BYTES) throw new Error(`Over ${MAX_BYTES} bytes — shorten it`);
-  const total = Math.max(1, Math.ceil(payload.length/CHUNK_BYTES));
-  const msgId = nextMsgId; nextMsgId = (nextMsgId+1) & 0xF;
-
-  const chunks = [];
-  for(let i=0;i<total;i++){
-    const slice = payload.slice(i*CHUNK_BYTES, (i+1)*CHUNK_BYTES);
-    chunks.push(encodeFrame(slice, msgId, i, total));
-  }
-  return { chunks, payloadLen:payload.length, msgId, total };
-}
-
-function encodeFrame(payload, msgId, chunkIdx, chunkTotal){
-  if(payload.length > 200) throw new Error("Chunk over 200 bytes");
+  if(payload.length > 200) throw new Error("Over 200 bytes — shorten it");
 
   const crc = crc16(payload);
   const body = [...payload, (crc>>8)&255, crc&255];
@@ -461,12 +431,9 @@ function encodeFrame(payload, msgId, chunkIdx, chunkTotal){
   for(const b of body) nib.push(b>>4, b&15);
   const bodyBits = interleave(nib.map(n=>HAM_ENC[n&15]));
 
-  const hdrBytes = [(msgId<<4)|chunkIdx, ((chunkTotal-1)<<4), payload.length];
-  const ck = hdrCheck(hdrBytes);
-  const hdrByteN = [...hdrBytes, ck];
-  const hnib = [];
-  for(const b of hdrByteN) hnib.push(b>>4, b&15);
-  const hdr = interleave(hnib.map(n=>HAM_ENC[n&15]));
+  const ck = hdrCheck(payload.length);
+  const hdr = interleave([HAM_ENC[payload.length>>4], HAM_ENC[payload.length&15],
+                          HAM_ENC[ck>>4], HAM_ENC[ck&15]]);
   const headerBits = [];
   for(let r=0;r<HREP;r++) headerBits.push(...hdr);
 
@@ -474,7 +441,7 @@ function encodeFrame(payload, msgId, chunkIdx, chunkTotal){
   if(bits.length % 2) bits.push(0);
   const symbols = [];
   for(let i=0;i<bits.length;i+=2) symbols.push(TONE_FOR_VAL[(bits[i]<<1)|bits[i+1]]);
-  return { symbols, payloadLen:payload.length, msgId, chunkIdx, chunkTotal };
+  return { symbols, payloadLen:payload.length };
 }
 
 /* ---------------- modulator ---------------- */
@@ -521,8 +488,7 @@ function resetRx(from){
   rx = { state:"scan", pos:from, hits:0, cand:-1, firstHit:0, lastHit:0, warm:0,
          floor:new Float32Array(SYNC_LIST.length).fill(1e-10),
          band:null, N:0, rateIdx:0, symStart:0, symIdx:0, totalSyms:0,
-         bits:[], rows:0, len:0, fixed:0, snrSum:0, snrN:0,
-         msgId:0, chunkIdx:0, chunkTotal:1 };
+         bits:[], rows:0, len:0, fixed:0, snrSum:0, snrN:0 };
 }
 function initRing(){
   if(ring.length !== sr*RING_SEC) ring = new Float32Array(sr*RING_SEC);
@@ -566,13 +532,10 @@ function readHeader(bits){
   for(let r=0;r<HREP;r++) for(let i=0;i<W;i++) votes[i] += bits[r*W+i];
   const maj = votes.map(x => x*2 > HREP ? 1 : 0);
   const hw = deinterleave(maj, HNIB);
-  const nib = hw.map(w => HAM_DEC[wordToInt(w)]);
-  const b0 = (nib[0]<<4)|nib[1], b1 = (nib[2]<<4)|nib[3],
-        len = (nib[4]<<4)|nib[5], chk = (nib[6]<<4)|nib[7];
-  const msgId = b0>>4, chunkIdx = b0&15, chunkTotal = (b1>>4)+1;
-  if(len < 1 || len > 200) return null;
-  if(chk !== hdrCheck([b0,b1,len])) return null;
-  return { len, msgId, chunkIdx, chunkTotal };
+  const len = (HAM_DEC[wordToInt(hw[0])]<<4) | HAM_DEC[wordToInt(hw[1])];
+  const chk = (HAM_DEC[wordToInt(hw[2])]<<4) | HAM_DEC[wordToInt(hw[3])];
+  if(len < 1 || len > 200 || chk !== hdrCheck(len)) return null;
+  return { len };
 }
 
 let rxMuted = false;
@@ -643,7 +606,7 @@ function pump(){
         cands.sort((a,b)=>b[1].score-a[1].score);
         for(const [,r] of cands.slice(0,6)){
           const h = readHeader(r.bits);
-          if(h){ chosen = {...r, ...h}; break; }
+          if(h){ chosen = {...r, len:h.len}; break; }
         }
         if(chosen) break;
       }
@@ -657,14 +620,12 @@ function pump(){
       rx.symStart=chosen.symStart; rx.symIdx=chosen.count; rx.bits=chosen.bits;
       rx.snrSum=chosen.snrSum; rx.snrN=chosen.snrN; rx.fixed=0;
       rx.len=chosen.len; rx.rows=(chosen.len+2)*2;
-      rx.msgId=chosen.msgId; rx.chunkIdx=chosen.chunkIdx; rx.chunkTotal=chosen.chunkTotal;
       rx.totalSyms = Math.ceil((HBITS + rx.rows*7)/2);
       rx.state = "data";
       $("ticker").innerHTML = "";
       for(const t of chosen.tones.slice(-24)) pushSym(t, true);
       setPill($("rxpill"),"busy","receiving");
-      const chunkLabel = chosen.chunkTotal>1 ? ` · chunk ${chosen.chunkIdx+1}/${chosen.chunkTotal}` : "";
-      setCap(`${band.name.toLowerCase()} band · ${Math.round(N/sr*1000)} ms symbols · ${chosen.len} bytes incoming${chunkLabel}`);
+      setCap(`${band.name.toLowerCase()} band · ${Math.round(N/sr*1000)} ms symbols · ${chosen.len} bytes incoming`);
       $("rxprog").classList.add("show");
       continue;
     }
@@ -693,12 +654,11 @@ function pump(){
         const payload = bytes.slice(0, rx.len);
         const got = (bytes[rx.len]<<8) | bytes[rx.len+1];
         const info = { band:rx.band.name, ms:Math.round(rx.N/sr*1000),
-                       snr:rx.snrSum/rx.snrN, fixed:rx.fixed,
-                       msgId:rx.msgId, chunkIdx:rx.chunkIdx, chunkTotal:rx.chunkTotal };
+                       snr:rx.snrSum/rx.snrN, fixed:rx.fixed };
         if(crc16(payload) === got){
-          deliverChunk(payload, info);
+          deliver(new TextDecoder().decode(new Uint8Array(payload)), null, info);
         } else {
-          deliverChunk(null, info, `checksum failed after repairing ${rx.fixed} codeword${rx.fixed===1?"":"s"} — signal too weak`);
+          deliver(null, `checksum failed after repairing ${rx.fixed} codeword${rx.fixed===1?"":"s"} — signal too weak`, info);
         }
         const at = Math.round(rx.symStart);
         resetRx(at);
@@ -737,101 +697,32 @@ function setPill(el, kind, text){
   el.textContent = text;
 }
 
-/* ---------------- delivery ----------------
-   Chunks of the same msgId are assembled into one growing log entry.
-   Text appears as soon as each chunk decodes rather than waiting for the
-   whole message, and a chunk that fails leaves a visible gap instead of
-   silently corrupting the rest. */
+/* ---------------- delivery ---------------- */
 const logEl = $("log");
-const inProgress = new Map();   // msgId -> { el, parts:[], total, got:Set, meta }
-
-function chunkMeta(info){
-  const parts = [info.band.toLowerCase()+" band", info.ms+" ms", info.snr.toFixed(0)+" dB margin"];
-  if(info.fixed) parts.push(info.fixed+" repaired");
-  return parts.join(" · ");
-}
-
-function newEntry(){
-  const e = logEl.querySelector(".empty"); if(e) e.remove();
-  const d = document.createElement("div");
-  d.className = "msg";
-  d.innerHTML = '<div class="meta"></div><div class="txt"></div><div class="chunkbar" hidden></div>';
-  logEl.prepend(d);
-  while(logEl.children.length > 40) logEl.removeChild(logEl.lastChild);
-  return d;
-}
-
-function renderChunkbar(state){
-  const bar = state.el.querySelector(".chunkbar");
-  if(state.total <= 1){ bar.hidden = true; return; }
-  bar.hidden = false;
-  bar.innerHTML = "";
-  for(let i=0;i<state.total;i++){
-    const s = document.createElement("span");
-    s.className = "cseg" + (state.got.has(i) ? " ok" : state.failed.has(i) ? " bad" : "");
-    bar.appendChild(s);
-  }
-}
-
-function finishEntry(state, timedOut){
-  const missing = [];
-  for(let i=0;i<state.total;i++) if(!state.got.has(i)) missing.push(i+1);
-  const ok = missing.length === 0;
-  state.el.classList.toggle("bad", !ok);
-  const label = ok ? "complete"
-    : timedOut ? `incomplete — chunk${missing.length>1?"s":""} ${missing.join(", ")} never arrived`
-    : `incomplete so far — chunk${missing.length>1?"s":""} ${missing.join(", ")} missing`;
-  state.el.querySelector(".meta").textContent =
-    `${state.startedAt} · ${state.total} chunk${state.total===1?"":"s"} · ${label}`;
-  setPill($("rxpill"), ok?"on":"err", ok?"decoded":"incomplete");
-  setCap("idle — watching all nine sync tones at once");
-  setTimeout(()=>{ if(listening) setPill($("rxpill"),"on","listening"); }, 1800);
-}
-
-function deliverChunk(payload, info, err){
-  const { msgId, chunkIdx, chunkTotal } = info;
-  let state = inProgress.get(msgId);
-  if(!state){
-    state = { el:newEntry(), text:new Array(chunkTotal).fill(""), got:new Set(),
-              failed:new Set(), total:chunkTotal, startedAt:new Date().toLocaleTimeString(),
-              timer:null };
-    inProgress.set(msgId, state);
-  }
-  if(err || payload === null){
-    state.failed.add(chunkIdx);
-  } else {
-    state.text[chunkIdx] = new TextDecoder().decode(new Uint8Array(payload));
-    state.got.add(chunkIdx);
-    state.failed.delete(chunkIdx);
-  }
-  state.el.querySelector(".txt").textContent = state.text.join("");
-  state.el.querySelector(".meta").textContent =
-    `${state.startedAt} · ${chunkMeta(info)}${state.total>1?` · chunk ${chunkIdx+1}/${state.total}`:""}`;
-  renderChunkbar(state);
-
-  if(state.got.size >= state.total){
-    clearTimeout(state.timer);
-    inProgress.delete(msgId);
-    finishEntry(state, false);
-  } else {
-    clearTimeout(state.timer);
-    state.timer = setTimeout(()=>{
-      inProgress.delete(msgId);
-      finishEntry(state, true);
-    }, 12000);
-  }
-}
-
-/* single-frame path used by the self-test loopback, which has no chunking */
+let lastText=null, lastTime=0;
 function deliver(text, err, info){
-  const d = newEntry();
-  d.classList.toggle("bad", !!err);
+  const e = logEl.querySelector(".empty"); if(e) e.remove();
+  const now = Date.now();
+  const dup = text !== null && text === lastText && now - lastTime < 15000;
+  if(text !== null){ lastText = text; lastTime = now; }
+
   const parts = [new Date().toLocaleTimeString()];
-  if(info) parts.push(chunkMeta(info));
-  parts.push(err ? "failed" : "ok");
+  if(info){
+    parts.push(info.band.toLowerCase()+" band", info.ms+" ms",
+               info.snr.toFixed(0)+" dB margin");
+    if(info.fixed) parts.push(info.fixed+" repaired");
+  }
+  parts.push(err ? "failed" : dup ? "repeat" : "ok");
+
+  const d = document.createElement("div");
+  d.className = "msg" + (err ? " bad" : dup ? " dup" : "");
+  d.innerHTML = '<div class="meta"></div><div class="txt"></div>';
   d.querySelector(".meta").textContent = parts.join(" · ");
   d.querySelector(".txt").textContent = err || text;
-  setPill($("rxpill"), err?"err":"on", err?"frame lost":"decoded");
+  logEl.prepend(d);
+  while(logEl.children.length > 40) logEl.removeChild(logEl.lastChild);
+
+  setPill($("rxpill"), err?"err":"on", err?"frame lost":dup?"repeat":"decoded");
   setCap("idle — watching all nine sync tones at once");
   setTimeout(()=>{ if(listening) setPill($("rxpill"),"on","listening"); }, 1800);
 }
@@ -922,31 +813,22 @@ function playSamples(samples, level){
 
 $("send").onclick = () => {
   audio();
-  let msg;
-  try{ msg = encodeMessage($("msg").value); }
+  let f;
+  try{ f = encodeFrame($("msg").value); }
   catch(err){ setPill($("txpill"),"err",err.message); return; }
 
   const { band, rateIdx, N, reps } = conf();
-  const chunkGap = Math.round(sr*0.25), repGap = Math.round(sr*0.35);
-  const chunkBufs = msg.chunks.map(f => modulate(f.symbols, band, rateIdx, N));
-  const oneMsgLen = chunkBufs.reduce((s,b)=>s+b.length,0) + chunkGap*(chunkBufs.length-1);
-  const total = new Float32Array(oneMsgLen*reps + repGap*(reps-1));
-  let w = 0;
-  for(let r=0;r<reps;r++){
-    if(r>0) w += repGap;
-    for(let i=0;i<chunkBufs.length;i++){
-      if(i>0) w += chunkGap;
-      total.set(chunkBufs[i], w); w += chunkBufs[i].length;
-    }
-  }
+  const one = modulate(f.symbols, band, rateIdx, N);
+  const gap = Math.round(sr*0.35);
+  const total = new Float32Array(one.length*reps + gap*(reps-1));
+  for(let r=0;r<reps;r++) total.set(one, r*(one.length+gap));
 
   const secs = total.length/sr;
   rxMuted = true;
   $("send").disabled = true; $("loop").disabled = true;
   setPill($("txpill"),"busy",`sending · ${secs.toFixed(1)} s`);
-  const chunkNote = msg.total>1 ? ` across ${msg.total} chunks` : "";
-  $("txhint").textContent = `${msg.payloadLen} bytes${chunkNote} over ${secs.toFixed(1)} s — about `+
-    `${(msg.payloadLen*8/(oneMsgLen/sr)).toFixed(0)} bits per second of payload.`;
+  $("txhint").textContent = `${f.payloadLen} bytes over ${secs.toFixed(1)} s — about `+
+    `${(f.payloadLen*8/(one.length/sr)).toFixed(0)} bits per second of payload.`;
   $("txprog").classList.add("show");
 
   const t0 = performance.now();
@@ -972,11 +854,7 @@ $("send").onclick = () => {
 $("loop").onclick = () => {
   audio();
   let f;
-  try{
-    const payload = Array.from(new TextEncoder().encode($("msg").value)).slice(0, CHUNK_BYTES);
-    if(!payload.length) throw new Error("Nothing to send");
-    f = encodeFrame(payload, 0, 0, 1);
-  }
+  try{ f = encodeFrame($("msg").value); }
   catch(err){ setPill($("txpill"),"err",err.message); return; }
   const { band, rateIdx, N } = conf();
   const clean = modulate(f.symbols, band, rateIdx, N);
@@ -1212,9 +1090,7 @@ $("share").onclick = async () => {
 
 $("vol").addEventListener("input", e => { $("vollab").textContent = e.target.value+"%"; });
 function countBytes(){
-  const nb = new TextEncoder().encode($("msg").value).length;
-  const nc = Math.max(1, Math.ceil(nb/CHUNK_BYTES));
-  $("bytecount").textContent = nb+" / 512 bytes"+(nc>1?` · ${nc} chunks`:"");
+  $("bytecount").textContent = new TextEncoder().encode($("msg").value).length+" / 200 bytes";
 }
 $("msg").addEventListener("input", countBytes);
 $("fslide").dispatchEvent(new Event("input"));
